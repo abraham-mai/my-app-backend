@@ -1,5 +1,4 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { config } from 'process';
 import { User } from './users.model';
 
 @Injectable()
