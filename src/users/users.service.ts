@@ -1,37 +1,28 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { config } from 'process';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Model } from 'mongoose';
+import { PostUserDTO } from './users.dto';
 import { User } from './users.model';
 
 @Injectable()
 export class UsersService {
-  private users: User[] = [];
+  private users = [];
 
-  // Add User
-  insertUser(userName: string, configId: number, key: string) {
-    const userId = this.setUserId();
-    const newUser = new User(userId, userName, configId, key);
-
-    this.users.push(newUser);
-    return userId;
-  }
+  constructor(
+    @Inject('USERS_MODEL')
+    private usersModel: Model<User>,
+  ) {}
 
   // Get User
   getUsers() {
     return [...this.users];
   }
 
-  getSingleUser(id: number) {
-    const user = this.findUser(id);
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    } else {
-      return user;
-    }
+  getSingleUser(id: string) {
+    return this.usersModel.find((x) => x.id === id).exec();
   }
 
   // Delete User
-  deleteSingleUser(id: number) {
+  deleteSingleUser(id: string) {
     const user = this.findUser(id);
 
     if (!user) {
@@ -43,33 +34,28 @@ export class UsersService {
   }
 
   // Update User
-  updateSingleUser(
-    id: number,
-    userName: string,
-    configId: number,
-    key: string,
-  ) {
+  updateSingleUser(id: string, newUser: PostUserDTO) {
     const user = this.findUser(id);
 
     if (!user) {
       throw new NotFoundException('User not found');
     } else {
-      user.userName = userName;
-      user.configId = configId;
-      user.key = key;
-      return [user];
+      const createdUser = new this.usersModel(newUser);
+      return createdUser.save();
     }
   }
 
-  private findUser(id: number): User {
+  private findUser(id: string): User {
     return this.users.find((user) => user.id === id);
   }
 
-  private setUserId() {
-    return this.users.length !== 0
-      ? +this.users.reduce(function (prev, current) {
-          return prev.id > current.id ? prev : current;
-        }).id + 1
-      : 1;
+  // Add user with mongoose
+  async insertUser(newUser: PostUserDTO): Promise<User> {
+    const createdUser = new this.usersModel(newUser);
+    return createdUser.save();
+  }
+
+  async findAll(): Promise<User[]> {
+    return this.usersModel.find().exec();
   }
 }

@@ -1,8 +1,15 @@
-export class User {
-  constructor(
-    public id: number,
-    public userName: string,
-    public configId: number,
-    public key: string,
-  ) {}
+import { Document } from 'mongoose';
+
+export interface User extends Document {
+  id: string;
+  userName: string;
+  userConfig: UserConfigItem[];
+  key: string;
+}
+
+export interface UserConfigItem {
+  id: string;
+  defaultIssue: string;
+  defaultComment: string;
+  category: string;
 }
