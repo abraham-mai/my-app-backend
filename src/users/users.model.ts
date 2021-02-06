@@ -7,8 +7,14 @@ export interface User extends Document {
 }
 
 export interface UserConfigItem {
-  id: string;
+  activityId: String;
   defaultIssue: string;
   defaultComment: string;
   category: string;
+}
+
+export enum UserConfigCategories {
+  implementation = 'implementierung',
+  test = 'test',
+  organizing = 'planung',
 }
