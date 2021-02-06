@@ -7,7 +7,6 @@ export interface User extends Document {
 }
 
 export interface UserConfigItem {
-  id: string;
   defaultIssue: string;
   defaultComment: string;
   category: string;
