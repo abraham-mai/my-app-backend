@@ -10,6 +10,7 @@ export const databaseProviders = [
       mongoose.connect(databaseUrl, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
+        useFindAndModify: false,
       }),
   },
 ];

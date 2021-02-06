@@ -1,13 +1,6 @@
-export class PostUserDTO {
-  id: string;
-  constructor(
-    userName: string,
-    userConfig: UserConfigItem[],
-    userKey: string,
-  ) {}
-}
+import { UserConfigItem } from './users.model';
 
-export class UserConfigItem {
-  id: string;
-  constructor(defaultIssue: string, defaultComment: string, category: string) {}
+export class PostUserDTO {
+  id: number;
+  constructor(userName: string, userConfig: UserConfigItem, userKey: string) {}
 }
