@@ -1,7 +1,7 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { PostUserDTO } from './users.dto';
-import { User } from './users.model';
+import { User, UserConfigItem } from './users.model';
 
 @Injectable()
 export class UsersService {
@@ -12,50 +12,64 @@ export class UsersService {
     private usersModel: Model<User>,
   ) {}
 
-  // Get User
-  getUsers() {
-    return [...this.users];
+  // GET
+  async findAll(): Promise<User[]> {
+    return this.usersModel.find().exec();
   }
 
-  getSingleUser(id: string) {
-    return this.usersModel.find((x) => x.id === id).exec();
-  }
-
-  // Delete User
-  deleteSingleUser(id: string) {
-    const user = this.findUser(id);
-
+  async getSingleUser(userId: number) {
+    const user = await this.usersModel.findOne({ id: userId }).exec();
     if (!user) {
       throw new NotFoundException('User not found');
     } else {
-      this.users.splice(this.users.indexOf(user), 1);
-      return 'Deleted';
+      return user;
+    }
+  }
+
+  async getUserConfigByUserId(userId: number) {
+    const user = await this.usersModel.findOne({ id: userId }).exec();
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user.userConfig;
+  }
+  // Delete User
+  async deleteSingleUser(userId: number) {
+    const user = await this.usersModel.findOneAndDelete({ id: userId }).exec();
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
   }
 
   // Update User
-  updateSingleUser(id: string, newUser: PostUserDTO) {
-    const user = this.findUser(id);
-
+  async updateSingleUser(userId: number, newUser: PostUserDTO) {
+    delete newUser['_id'];
+    const user = await this.usersModel
+      .findOneAndUpdate({ id: userId }, newUser)
+      .exec();
     if (!user) {
       throw new NotFoundException('User not found');
-    } else {
-      const createdUser = new this.usersModel(newUser);
-      return createdUser.save();
     }
   }
 
-  private findUser(id: string): User {
-    return this.users.find((user) => user.id === id);
+  async updateUserConfigByUserId(
+    userId: number,
+    newUserConfig: UserConfigItem[],
+  ) {
+    const user = await this.usersModel.findOne({ id: userId }).exec();
+    user.userConfig = newUserConfig;
+    const updateConfig = await this.usersModel.findOneAndUpdate(
+      { id: userId },
+      user,
+    );
+    if (!updateConfig) {
+      throw new NotFoundException('User not found');
+    }
   }
 
-  // Add user with mongoose
+  // POST
   async insertUser(newUser: PostUserDTO): Promise<User> {
     const createdUser = new this.usersModel(newUser);
     return createdUser.save();
-  }
-
-  async findAll(): Promise<User[]> {
-    return this.usersModel.find().exec();
   }
 }
